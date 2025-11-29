@@ -1,0 +1,5 @@
+# Env
+.env
+lancaster-finance-venv/
+__pycache__/
+*.pyc
