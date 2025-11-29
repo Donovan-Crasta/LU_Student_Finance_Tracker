@@ -12,40 +12,23 @@ Students submit recent expenses (date/amount/description). AI:
 
 Improves journey by preventing debt, maximizing bursaries, building financial literacy.
 
-## Quick Start (Virtual Environment - Required)
+## 🚀 One-Command Setup
 
-### Developer/Tester Instructions
-
-1. Clone and Create Virtual Environment
+### Linux/macOS
 ```bash
-git clone <repo> && cd lancaster-finance-tracker
-python -m venv lancaster-finance-venv
+chmod +x setup.sh
+./setup.sh
 ```
 
-2. Activate (choose your OS)
-Windows:
+### Windows (Git Bash/PowerShell)
 ```bash
-lancaster-finance-venv\Scripts\activate
+bash setup.sh
 ```
 
-macOS/Linux:
+**That's it!** Edit `.env` with your OpenAI key, then:
 ```bash
-source lancaster-finance-venv/bin/activate
-```
-
-3. Install dependencies
-```bash
-pip install -r requirements.txt
-```
-
-4. Add your OpenAPI key
-```bash
-cp .env.example .env
-```
-Edit .env -> Paste your sk-proj-... key
-
-5. Run
 uvicorn app.main:app --reload --port 8000
+```
 
 **Test immediately:**
 ```bash

@@ -3,3 +3,6 @@
 lancaster-finance-venv/
 __pycache__/
 *.pyc
+
+# VSCode (auto-generated, don't commit)
+.vscode/

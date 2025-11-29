@@ -7,7 +7,7 @@ from decimal import Decimal
 
 import httpx
 from fastapi import FastAPI, HTTPException
-from pydantic import BaseModel, Field, validator
+from pydantic import BaseModel, Field
 
 logging.basicConfig(level=logging.INFO)
 
