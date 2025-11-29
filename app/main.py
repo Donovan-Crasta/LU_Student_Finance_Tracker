@@ -149,7 +149,7 @@ def parse_ai_response(ai_json: str, total_spent: Decimal, expenses: List[Expense
         raise ValueError(f"Invalid AI response format: {e}")
 
 @app.post("/feature", response_model=FinanceResponse)
-async def analyze_finances(req: FinanceRequest):
+async def analyse_finances(req: FinanceRequest):
     logger.info("Finance analysis for student %s (%d expenses)", req.student_id, len(req.expenses))
 
     try:
