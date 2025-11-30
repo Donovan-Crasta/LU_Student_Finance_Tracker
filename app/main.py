@@ -1,7 +1,8 @@
 import logging
 import json
 import os
-from typing import List
+from dotenv import load_dotenv
+from typing import List, Optional
 from datetime import date
 from decimal import Decimal
 
@@ -9,6 +10,7 @@ import httpx
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel, Field
 
+load_dotenv()   # Load environment variables from .env file
 logging.basicConfig(level=logging.INFO)
 
 logger = logging.getLogger("lancaster-finance-tracker")
@@ -36,7 +38,7 @@ class CategorySummary(BaseModel):
 class Alert(BaseModel):
     type: str
     message: str
-    url: str = None
+    url: Optional[str] = None
 
 class FinanceResponse(BaseModel):
     summary: dict
@@ -55,8 +57,11 @@ async def health():
     return {"status": "ok", "service": "lancaster-finance-tracker"}
 
 async def call_ai_model(prompt: str) -> str:
+    if os.getenv("MOCK_MODE") == "true":
+        logger.info("🎭 Using mock mode for demo")
+        return '''{"risk_level": "medium", "risk_factors": ["Coffee habit"], "alerts": [{"type": "coffee", "message": "Try campus shop", "url": "https://lancaster.ac.uk/store"}], "advice": ["Bring thermos"]}'''
     """Call OpenAI-compatible chat completion endpoint."""
-    api_key = os.getenv("OPENAI_API_KEY")
+    api_key = os.getenv("AI_API_KEY")
     if not api_key:
         raise HTTPException(status_code=500, detail="OpenAI API key not configured")
     
@@ -83,8 +88,8 @@ async def call_ai_model(prompt: str) -> str:
             )},
             {"role": "user", "content": prompt}
         ],
-        "temperature": 0.3,   
-    }
+        "temperature": 0.3,
+    }   
 
     async with httpx.AsyncClient(timeout=30) as client:
         resp = await client.post(url, headers=headers, json=payload)
