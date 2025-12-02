@@ -39,7 +39,7 @@ export MOCK_MODE=true && uvicorn app.main:app --reload
 ```
 2. **Open:** http://localhost:8000/docs
 
-3. **Click `/feature` → `Try it out` → `Execute` ✅**
+3. **Click `/feature` → `Try it out` → `Execute`**
 
 ## Test API
 
