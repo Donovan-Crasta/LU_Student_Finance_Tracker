@@ -58,8 +58,38 @@ async def health():
 
 async def call_ai_model(prompt: str) -> str:
     if os.getenv("MOCK_MODE") == "true":
-        logger.info("🎭 Using mock mode for demo")
-        return '''{"risk_level": "medium", "risk_factors": ["Coffee habit"], "alerts": [{"type": "coffee", "message": "Try campus shop", "url": "https://lancaster.ac.uk/store"}], "advice": ["Bring thermos"]}'''
+        logger.info("Using mock mode for demo")
+        lines = prompt.split('\n')
+        total_spent = 0
+        for line in lines:
+            if '£' in line and line.strip():
+                try:
+                    amount = float(line.split('£')[1].split()[0].replace(',', ''))
+                    total_spent += amount
+                except:
+                    pass
+        
+        risk_level = "high" if total_spent > 100 else "medium" if total_spent > 30 else "low"
+        alerts = []
+        if total_spent > 50:
+            alerts.append({
+                "type": "high_spend", 
+                "message": "Weekly spend exceeds average. Check ASK money advice.",
+                "url": "https://portal.lancaster.ac.uk/ask/money/"
+            })
+        
+        return json.dumps({
+            "risk_level": risk_level,
+            "risk_factors": [f"Total spending: £{total_spent:.2f}"],
+            "total_spent": total_spent,
+            "avg_daily_spend": total_spent / 7,
+            "alerts": alerts,
+            "advice": [
+                "Track spending weekly via this API", 
+                "Batch cook to save £20/week",
+                "Use campus store discounts"
+            ]
+        })
     """Call OpenAI-compatible chat completion endpoint."""
     api_key = os.getenv("AI_API_KEY")
     if not api_key:

@@ -24,7 +24,22 @@ chmod +x setup.sh
 ```bash
 bash setup.sh
 ```
-**Done!** Edit `.env` with OpenAI key (optional), then:
+**Expected output:**
+```bash
+Choose ONE option:
+ 1. DEMO MODE: export MOCK_MODE=true && uvicorn app.main:app --reload
+ 2. REAL AI: Edit .env → uvicorn app.main:app --reload --port 8000
+```
+
+## Test in Browser
+
+1. **Start server:**
+```bash
+export MOCK_MODE=true && uvicorn app.main:app --reload
+```
+2. **Open:** http://localhost:8000/docs
+
+3. **Click `/feature` → `Try it out` → `Execute` ✅**
 
 ## Test API
 
@@ -41,13 +56,3 @@ curl -X POST http://localhost:8000/feature
 ```
 
 **Interactive docs:** http://localhost:8000/docs
-
-## Demo Mode (No API Key)
-```bash
-export MOCK_MODE=true
-```
-
-## Real AI Mode
-```bash
-unset MOCK_MODE
-```

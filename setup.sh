@@ -1,16 +1,19 @@
 #!/bin/bash
-echo "Lancaster Finance Tracker Setup"
+echo "🚀 Lancaster Finance Tracker Setup"
 
-# Create & activate venv
-python -m venv lancaster-finance-venv
-source lancaster-finance-venv/Scripts/activate # On Windows: lancaster-finance-venv\Scripts\activate
-
-# Install dependencies
+python3 -m venv lancaster-finance-venv
+source lancaster-finance-venv/bin/activate
 pip install -r requirements.txt
-echo "Virtual environment ready!"
-
-# Setup env file
 cp .env.example .env
 
 echo "Setup complete!"
-uvicorn app.main:app --reload --port 8000
+echo ""
+echo "Choose ONE option:"
+echo ""
+echo "1. DEMO MODE (no key needed):"
+echo " export MOCK_MODE=true && uvicorn app.main:app --reload --port 8000"
+echo ""
+echo "2. REAL AI: Edit .env -> uvicorn app.main:app --reload --port 8000"
+echo ""
+echo "http://localhost:8000/docs"
+read -p "Press Enter when ready..."
