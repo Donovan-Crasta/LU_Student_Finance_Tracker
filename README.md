@@ -41,14 +41,14 @@ export MOCK_MODE=true && uvicorn app.main:app --reload
 
 3. **Click `/feature` → `Try it out` → `Execute`**
 
-## Test API
+## Test API from terminal
 
 **Health check:**
 ```bash
 curl http://localhost:8000/health
 ```
 
-**Demo analysis (works without OpenAI key):**
+**Demo analysis (without OpenAI key):**
 ```bash
 curl -X POST http://localhost:8000/feature
 -H "Content-Type: application/json"
