@@ -70,20 +70,12 @@ async def call_ai_model(prompt: str) -> str:
                     pass
         
         risk_level = "high" if total_spent > 100 else "medium" if total_spent > 30 else "low"
-        alerts = []
-        if total_spent > 50:
-            alerts.append({
-                "type": "high_spend", 
-                "message": "Weekly spend exceeds average. Check ASK money advice.",
-                "url": "https://portal.lancaster.ac.uk/ask/money/"
-            })
         
         return json.dumps({
             "risk_level": risk_level,
             "risk_factors": [f"Total spending: £{total_spent:.2f}"],
             "total_spent": total_spent,
             "avg_daily_spend": total_spent / 7,
-            "alerts": alerts,
             "advice": [
                 "Track spending weekly via this API", 
                 "Batch cook to save £20/week",
@@ -134,8 +126,7 @@ def build_finance_prompt(req: FinanceRequest) -> str:
         for e in req.expenses
     ])
 
-    return f"""Lancaster University student {req.student_id} expenses:
-{expenses_text}
+    return f"""Lancaster University student {req.student_id} expenses: {expenses_text}
 
 Income sources: {', '.join(req.income_sources) or 'unknown'}
 
@@ -156,17 +147,33 @@ def parse_ai_response(ai_json: str, total_spent: Decimal, expenses: List[Expense
 
         # Calculate deterministic values
         days_span = (max(e.date for e in expenses) - min(e.date for e in expenses)).days + 1
-        avg_daily = float(total_spent / Decimal(days_span)) if days_span > 0 else 0
+        avg_daily = round(float(total_spent / Decimal(days_span)), 2) if days_span > 0 else 0
 
         # Default categorisation
         categorisation = CategorySummary()
-
+        for e in expenses:
+            desc = (e.description + " " + e.merchant).lower()
+            amt = round(e.amount, 2)
+            if "food" in desc or "coffee" in desc or "restaurant" in desc or "takeaway" in desc or "meal" in desc:
+                categorisation.food += amt
+            elif "transport" in desc or "bus" in desc or "train" in desc:
+                categorisation.transport += amt
+            elif "rent" in desc or "accommodation" in desc:
+                categorisation.rent += amt
+            elif "utility" in desc or "electricity" in desc or "water" in desc:
+                categorisation.utilities += amt
+            elif "entertainment" in desc or "movie" in desc or "game" in desc:
+                categorisation.entertainment += amt
+            elif "grocery" in desc or "supermarket" in desc or "shop" in desc:
+                categorisation.groceries += amt
+            else:
+                categorisation.miscellaneous += amt
         # Build alerts if AI does not provide them
         alerts = raw.get("alerts", [])
-        if total_spent > 500:
+        if total_spent > Decimal("200"):
             alerts.append({
                 "type": "high_spend",
-                "message": "Weekly spending exceeds £500. Review ASK money advice.",
+                "message": "Weekly spending exceeds £200. Review ASK money advice.",
                 "url": "https://portal.lancaster.ac.uk/ask/money/"
             })
         

@@ -57,14 +57,16 @@ curl http://localhost:8000/health
 
 **Demo Analysis**
 ```bash
-curl -X POST http://localhost:8000/feature
--H "Content-Type: application/json"
--d '{"student_id":"s123456","expenses":[{"date":"2025-11-25","amount":12.50,"description":"coffee","merchant":"LU Costa Coffee"}]}'
+curl -X POST http://localhost:8000/feature -H 'Content-Type: application/json' -d '{"student_id": "s1", "expenses": [{"date":"2025-11-25","amount": 120,"description": "shopping","merchant": "M&S"},
+{"date": "2025-11-27","amount": 80,"description": "food","merchant": "Sultan"},
+{"date": "2025-11-26","amount": 12.50,"description": "ice skating","merchant": "Dalton"}],
+"income_sources": ["part-time TA"]
+}'
 ```
 
 **Sample Output**
 ```bash
-{"summary":{"total_spent":12.5,"avg_daily_spend":12.5,"risk_level":"low","risk_factors":["Total spending: £12.50"]},"categorisation":{"food":0,"transport":0,"rent":0,"utilities":0,"entertainment":0,"groceries":0,"miscellaneous":0},"alerts":[],"advice":["Track spending weekly via this API","Batch cook to save £20/week","Use campus store discounts"]}
+{"summary":{"total_spent":212.5,"avg_daily_spend":70.83,"risk_level":"high","risk_factors":["Total spending: £212.50"]},"categorisation":{"food":"80.00","transport":0,"rent":0,"utilities":0,"entertainment":0,"groceries":"120.00","miscellaneous":"12.50"},"alerts":[{"type":"high_spend","message":"Weekly spending exceeds £200. Review ASK money advice.","url":"https://portal.lancaster.ac.uk/ask/money/"}],"advice":["Track spending weekly via this API","Batch cook to save £20/week","Use campus store discounts"]}
 ```
 
 **Interactive docs:** http://localhost:8000/docs
