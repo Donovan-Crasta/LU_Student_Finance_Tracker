@@ -42,6 +42,9 @@ export MOCK_MODE=true && uvicorn app.main:app --reload
 3. **Click `/feature` → `Try it out` → `Execute`**
 
 ## Test API from terminal
+```bash
+uvicorn app.main:app --reload --port 8000
+```
 
 **Health check:**
 ```bash
