@@ -50,12 +50,21 @@ uvicorn app.main:app --reload --port 8000
 ```bash
 curl http://localhost:8000/health
 ```
+**Output**
+```bash
+{"status":"ok","service":"lancaster-finance-tracker"}
+```
 
-**Demo analysis (without OpenAI key):**
+**Demo Analysis**
 ```bash
 curl -X POST http://localhost:8000/feature
 -H "Content-Type: application/json"
 -d '{"student_id":"s123456","expenses":[{"date":"2025-11-25","amount":12.50,"description":"coffee","merchant":"LU Costa Coffee"}]}'
+```
+
+**Sample Output**
+```bash
+{"summary":{"total_spent":12.5,"avg_daily_spend":12.5,"risk_level":"low","risk_factors":["Total spending: £12.50"]},"categorisation":{"food":0,"transport":0,"rent":0,"utilities":0,"entertainment":0,"groceries":0,"miscellaneous":0},"alerts":[],"advice":["Track spending weekly via this API","Batch cook to save £20/week","Use campus store discounts"]}
 ```
 
 **Interactive docs:** http://localhost:8000/docs
