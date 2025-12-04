@@ -4,7 +4,7 @@ echo "🚀 Lancaster Finance Tracker Setup"
 python3 -m venv lancaster-finance-venv
 source lancaster-finance-venv/bin/activate
 pip install -r requirements.txt
-#cp .env.example .env
+cp .env.example .env
 
 echo "Setup complete!"
 echo ""
