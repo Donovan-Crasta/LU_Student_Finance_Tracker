@@ -12,24 +12,29 @@ Students submit recent expenses (date/amount/description). AI:
 
 Improves journey by preventing debt, maximising bursaries, building financial literacy.
 
-## One-Command Setup
+## Quick Setup
 
-### Linux/macOS
+## 1. Create & activate virtual environment
+
+# Windows (PowerShell)
+```bash
+python -m venv lancaster-finance-venv
+.\lancaster-finance-venv\Scripts\Activate.ps1
+```
+
+## 2. Install dependencies and start API
+```bash
+pip install -r requirements.txt
+cp .env.example .env # or create your own .env
+```
+
+### Optional shortcut (Linux / macOS / Git Bash only)
 ```bash
 chmod +x setup.sh
 ./setup.sh
 ```
 
-### Windows (Git Bash/PowerShell)
-```bash
-bash setup.sh
-```
-**Expected output:**
-```bash
-Choose ONE option:
- 1. DEMO MODE: export MOCK_MODE=true && uvicorn app.main:app --reload
- 2. REAL AI: Edit .env → uvicorn app.main:app --reload --port 8000
-```
+On Windows PowerShell, run the manual commands above instead.
 
 ## Test in Browser
 
