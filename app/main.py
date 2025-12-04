@@ -8,7 +8,7 @@ from decimal import Decimal
 
 import httpx
 from fastapi import FastAPI, HTTPException
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, ConfigDict
 
 load_dotenv()   # Load environment variables from .env file
 logging.basicConfig(level=logging.INFO)
@@ -43,8 +43,13 @@ class Alert(BaseModel):
 class FinanceResponse(BaseModel):
     summary: dict
     categorisation: CategorySummary
-    alerts: List[Alert]
+    alerts: Optional[List[Alert]] = None
     advice: List[str]
+
+    model_config = ConfigDict(
+        extra="forbid",
+        ser_json_include_none=False
+    )
 
 app = FastAPI(
     title="Lancaster Student Finance Tracker",
@@ -176,21 +181,25 @@ def parse_ai_response(ai_json: str, total_spent: Decimal, expenses: List[Expense
                 "message": "Weekly spending exceeds £200. Review ASK money advice.",
                 "url": "https://portal.lancaster.ac.uk/ask/money/"
             })
-        
-        return FinanceResponse(
-            summary = {
+        alert_objs = [Alert(**alert) for alert in alerts]
+
+        kwargs = dict(
+            summary={
                 "total_spent": float(total_spent),
                 "avg_daily_spend": avg_daily,
-                **{k: v for k,v in raw.items() if k in ["risk_level", "risk_factors"]}
+                **{k: v for k, v in raw.items() if k in ["risk_level", "risk_factors"]},
             },
-            categorisation = categorisation,
-            alerts = [Alert(**alert) for alert in alerts],
-            advice = raw.get("advice", ["Track weekly spending"])
+            categorisation=categorisation,
+            advice=raw.get("advice", ["Track weekly spending"]),
         )
+        if alert_objs:
+            kwargs["alerts"] = alert_objs
+        return FinanceResponse(**kwargs)
+
     except (json.JSONDecodeError, KeyError, TypeError) as e:
         raise ValueError(f"Invalid AI response format: {e}")
 
-@app.post("/feature", response_model=FinanceResponse)
+@app.post("/feature")
 async def analyse_finances(req: FinanceRequest):
     logger.info("Finance analysis for student %s (%d expenses)", req.student_id, len(req.expenses))
 
