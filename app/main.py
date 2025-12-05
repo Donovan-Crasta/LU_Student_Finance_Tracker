@@ -62,31 +62,78 @@ async def health():
     return {"status": "ok", "service": "lancaster-finance-tracker"}
 
 async def call_ai_model(prompt: str) -> str:
-    if os.getenv("MOCK_MODE") == "true":
-        logger.info("Using mock mode for demo")
-        lines = prompt.split('\n')
-        total_spent = 0
-        for line in lines:
-            if '£' in line and line.strip():
-                try:
-                    amount = float(line.split('£')[1].split()[0].replace(',', ''))
-                    total_spent += amount
-                except:
-                    pass
-        
-        risk_level = "high" if total_spent > 100 else "medium" if total_spent > 30 else "low"
-        
-        return json.dumps({
-            "risk_level": risk_level,
-            "risk_factors": [f"Total spending: £{total_spent:.2f}"],
-            "total_spent": total_spent,
-            "avg_daily_spend": total_spent / 7,
-            "advice": [
-                "Track spending weekly via this API", 
-                "Batch cook to save £20/week",
-                "Use campus store discounts"
-            ]
-        })
+    provider = os.getenv("AI_PROVIDER", "mock")
+    logger.info(f"Using AI provider: {provider}")
+    if provider == "mock":
+        return await _mock_ai(prompt)
+    elif provider == "ollama":
+        return await _ollama_ai(prompt)
+    elif provider == "openai":
+        return await _openai_ai(prompt)
+    else:
+        raise RuntimeError(f"Unsupported AI_PROVIDER: {provider}. Use 'mock', 'ollama', or 'openai'.")
+
+async def _mock_ai(prompt: str) -> str:
+    """ Dynamic mock: processes real expenses and calculates risk level. """
+    logger.info("Mock mode - processing expenses")
+    lines = prompt.split('\n')
+    total_spent = 0.0
+    for line in lines:
+        if '£' in line and line.strip():
+            try:
+                amount = float(line.split('£')[1].split()[0].replace(',', ''))
+                total_spent += amount
+            except:
+                pass
+    risk_level = "high" if total_spent > 200 else "medium" if total_spent > 50 else "low"
+    return json.dumps({
+        "risk_level": risk_level,
+        "risk_factors": [f"Total spending: £{total_spent:.2f}"],
+        "total_spent": total_spent,
+        "avg_daily_spend": round(total_spent / 7, 2),
+        "advice": ["Track weekly spending via this API.", "Batch cook to save on food costs.", "Use campus store discounts."]
+    })
+
+async def _ollama_ai(prompt: str) -> str:
+    """Call a local Ollama model for testing. Ollama runs locally on http://localhost:11434"""
+    
+    url = "http://localhost:11434/api/generate"
+    full_prompt = f"""You are a finance advisor for Lancaster University students. Analyse their spending patterns and provide actionable advice.
+
+Risk Rules (MANDATORY):
+total_spent > £200 -> high risk
+total_spent £50-£200 -> medium risk
+total_spent < £50 -> low risk
+
+For all alerts, use this URL: https://portal.lancaster.ac.uk/ask/money/
+Expenses: {prompt}
+
+Return JSON with these fields:
+
+"risk_level": apply the above rules,
+"risk_factors": list of spending issues,
+"total_spent": sum of all amounts,
+"avg_daily_spend": total spent divided by number of days,
+"alerts": list of {{type, message, url}} OR empty []
+],
+"advice": practical tips list for students.
+
+Reference Lancaster University's services: ASK money advice, LUSU hardship fund, campus store discounts."""
+    payload = {
+        "model": "llama3.2",
+        "prompt": full_prompt,
+        "stream": False,
+        "options": {"temperature": 0.0, "top_p": 0.1, "repeat_penalty": 1.1},
+    }
+    async with httpx.AsyncClient(timeout=60) as client:
+        resp = await client.post(url, json=payload)
+        resp.raise_for_status()
+        data = resp.json()
+        content = data.get("response", "").strip()
+        logger.info("Ollama raw response: %s", content[:200])
+        return content
+
+async def _openai_ai(prompt: str) -> str:
     """Call OpenAI-compatible chat completion endpoint."""
     api_key = os.getenv("AI_API_KEY")
     if not api_key:
@@ -105,7 +152,7 @@ async def call_ai_model(prompt: str) -> str:
                 '"risk_level": "low|medium|high",\n'
                 '"risk_factors": ["string"],\n'
                 '"total_spent": number,\n'
-                '"avg_daily_spend": number\n'
+                '"avg_daily_spend": number,\n'
                 '"alerts": [\n'
                 '    {"type": "string", "message": "string", "url": "string|null"}\n'
                 '],\n'
@@ -145,7 +192,6 @@ Return analysis as JSON only."""
 
 def parse_ai_response(ai_json: str, total_spent: Decimal, expenses: List[Expense]) -> FinanceResponse:
     """Core logic: Parse and validate AI JSON response into typed model.
-    Unit testable business logic.
     """
     try:
         raw = json.loads(ai_json)

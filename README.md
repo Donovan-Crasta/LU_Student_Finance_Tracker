@@ -16,40 +16,57 @@ Improves journey by preventing debt, maximising bursaries, building financial li
 
 ## 1. Create & activate virtual environment
 
-# Windows (PowerShell)
+### Linux/macOS
+```bash
+python3 -m venv lancaster-finance-venv
+source lancaster-finance-venv/bin/activate
+```
+
+### Windows (PowerShell)
 ```bash
 python -m venv lancaster-finance-venv
 .\lancaster-finance-venv\Scripts\Activate.ps1
 ```
 
-## 2. Install dependencies and start API
+### Windows (Git Bash)
+```bash
+python -m venv lancaster-finance-venv
+source lancaster-finance-venv/Scripts/activate
+```
+
+## 2. Install dependencies
 ```bash
 pip install -r requirements.txt
-cp .env.example .env # or create your own .env
 ```
 
-### Optional shortcut (Linux / macOS / Git Bash only)
+## 3. Configure AI:
+### Ollama (local AI, no key required)
+
+*Install Ollama*: https://ollama.com/download
+
 ```bash
-chmod +x setup.sh
-./setup.sh
+ollama pull llama3.2    # ~2GB, needed just the first time
 ```
 
-On Windows PowerShell, run the manual commands above instead.
-
-## Test in Browser
-
-1. **Start server:**
+### OpenAI (Requires paid key)
+**Edit .env**
 ```bash
-export MOCK_MODE=true && uvicorn app.main:app --reload
+AI_PROVIDER=openai
+AI_API_KEY=sk-proj-your-key-here
 ```
-2. **Open:** http://localhost:8000/docs
 
-3. **Click `/feature` → `Try it out` → `Execute`**
-
-## Test API from terminal
+## 4. Run API
 ```bash
 uvicorn app.main:app --reload --port 8000
 ```
+
+## 5. Test in Browser
+
+**Open:** http://localhost:8000/docs
+
+**Click `/feature` → `Try it out` → `Execute`**
+
+## 6. Test API from terminal
 
 **Health check:**
 ```bash
@@ -72,6 +89,10 @@ curl -X POST http://localhost:8000/feature -H 'Content-Type: application/json' -
 **Sample Output**
 ```bash
 {"summary":{"total_spent":212.5,"avg_daily_spend":70.83,"risk_level":"high","risk_factors":["Total spending: £212.50"]},"categorisation":{"food":"80.00","transport":0,"rent":0,"utilities":0,"entertainment":0,"groceries":"120.00","miscellaneous":"12.50"},"alerts":[{"type":"high_spend","message":"Weekly spending exceeds £200. Review ASK money advice.","url":"https://portal.lancaster.ac.uk/ask/money/"}],"advice":["Track spending weekly via this API","Batch cook to save £20/week","Use campus store discounts"]}
+```
+## 7. Testing
+```bash
+pytest tests/ -v
 ```
 
 **Interactive docs:** http://localhost:8000/docs
